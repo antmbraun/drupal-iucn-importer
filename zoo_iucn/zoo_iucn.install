@@ -1,0 +1,15 @@
+<?php
+/**
+ * @file
+ * Installs cache table for zoo iucn module
+ *
+ */
+
+/**
+* Implements hook_schema().
+*/
+function zoo_iucn_schema() {
+  $schema = array();
+  $schema['cache_iucn'] = drupal_get_schema_unprocessed('system', 'cache');
+  return $schema;
+}

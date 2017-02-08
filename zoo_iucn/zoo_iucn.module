@@ -1,5 +1,11 @@
 <?php
 /**
+ * @file
+ * Checks animal scientific names and conservation statuses against IUCN data using the IUCN redlist API (http://apiv3.iucnredlist.org/). Allows updating of nodes to match this data.
+ *
+ */
+
+/**
  * Implements hook_permission().
  */
 function zoo_iucn_permission() {
@@ -16,21 +22,12 @@ function zoo_iucn_permission() {
 function zoo_iucn_help($path, $arg) {
   switch ($path) {
     case 'admin/animals/data_update' :
-      $h =  t("This table shows how your animal species' data compares with the most recently pulled data from IUCN.  ");
-      $h .= t("If you do not see a table below (usually as a result of clearing all cache), then you must pull new data.");
+      $h =  t("This table shows how your animal species' data compares with the most recently pulled data from IUCN. If you do not see a table below, then you must pull new data");
       return $h;
       break;
   }
 }
 
-/**
-* Implements hook_schema().
-*/
-function zoo_iucn_schema() {
-  $schema = array();
-  $schema['cache_iucn'] = drupal_get_schema_unprocessed('system', 'cache');
-  return $schema;
-}
 
 /**
 * Implements hook_flush_caches().
@@ -46,15 +43,15 @@ function zoo_iucn_menu() {
   $items = array();
 
   $items['admin/content/iucn'] = array(
-    'title' => 'Update Animal Data',
-    'description' => 'Update Animal Data',
+    'title' => 'Check IUCN data',
+    'description' => 'Check IUCN data',
     'page callback' => 'zoo_iucn_data_page_view',
     'access arguments' => array('Administer Animal Data Updates via IUCN'),
     'type' => MENU_NORMAL_ITEM,
   );
 
   $items['admin/content/iucn/data-view'] = array(
-    'title' => 'Update Animal Data',
+    'title' => 'Check IUCN data',
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
 
@@ -69,7 +66,7 @@ function zoo_iucn_menu() {
 
   $items['iucn-update/%/%node'] = array(
     'page callback' => 'zoo_iucn_update_animal',
-    'page arguments' => array(1,2),
+    'page arguments' => array(1, 2),
     'access arguments' => array('Administer Animal Data Updates via IUCN'),
     // 'type' => MENU_LOCAL_TASK,
   );
@@ -97,17 +94,17 @@ function zoo_iucn_settings_form($form, &$form_state) {
     '#type' => 'select',
        '#title' => t('Your Animal Content Type'),
        '#options' => node_type_get_names(),
-       '#default_value' => variable_get('zoo_iucn_settings_animal_ct',''),
+       '#default_value' => variable_get('zoo_iucn_settings_animal_ct', ''),
        '#description' => t('Select your animal content type. It should contain a field for "scientific name" and a field for "genus and species".'),
        '#required' => TRUE,
        '#attributes' => array('onChange' => 'this.form.submit();'),
   );
 
-  $animal_bundle = variable_get('zoo_iucn_settings_animal_ct','');
+  $animal_bundle = variable_get('zoo_iucn_settings_animal_ct', '');
   $field_list = field_info_instances('node', $animal_bundle);
   $fields = array();
   foreach ($field_list as $field) {
-    if($field['widget']['type'] == 'text_textfield') {
+    if ($field['widget']['type'] == 'text_textfield') {
       $fields[] = $field['field_name'];
     }
   }
@@ -116,7 +113,7 @@ function zoo_iucn_settings_form($form, &$form_state) {
     '#type' => 'select',
        '#title' => t('Your Scientific Name Field'),
        '#options' => $fields,
-       '#default_value' => variable_get('zoo_iucn_settings_field_scientific_name',''),
+       '#default_value' => variable_get('zoo_iucn_settings_field_scientific_name', ''),
        '#description' => t('Select your scientific name field. It must be a text field.'),
        '#required' => TRUE,
   );
@@ -132,7 +129,7 @@ function zoo_iucn_settings_form($form, &$form_state) {
     '#type' => 'select',
        '#title' => t('Your IUCN status field'),
        '#options' => drupal_map_assoc($fields),
-       '#default_value' => variable_get('zoo_iucn_settings_iucn_status',''),
+       '#default_value' => variable_get('zoo_iucn_settings_iucn_status', ''),
        '#description' => t('Select your IUCN status field. It must be a select field.'),
        '#required' => TRUE,
   );
@@ -169,7 +166,7 @@ function zoo_iucn_update_form_submit($form, &$form_state) {
   $gs_array = array();
 
   $i = 0;
-  foreach($animals as $nid => $animal) {
+  foreach ($animals as $nid => $animal) {
     $gs_array[$i][$nid] = $animal->field_genus_and_species['und'][0]['value'];
     if (count($gs_array[$i]) == $items_per_batch) {
       $batch['operations'][] = array('iucn_process', array($gs_array[$i]));
@@ -184,7 +181,7 @@ function zoo_iucn_update_form_submit($form, &$form_state) {
  * Processes newly arrived IUCN data, stores it in cache
  */
 function iucn_process($gs_array) {
-  foreach($gs_array as $nid => $gs) {
+  foreach ($gs_array as $nid => $gs) {
     // dpm($gs);
     $result = iucn_call($gs);
     // dpm($result);
@@ -193,7 +190,8 @@ function iucn_process($gs_array) {
           'status' => $result['result'][0]['category'],
           'genus_species' => $result['result'][0]['scientific_name']
         );
-    } else {
+    }
+    else {
       $final_result = array(
           'status' => NULL,
           'genus_species' => 'Unable to find species at IUCN.'
@@ -278,7 +276,7 @@ function zoo_iucn_node_update($node) {
 
 function get_iucn_status_map() {
   //get status array
-  $status_field = variable_get('zoo_iucn_settings_iucn_status','');
+  $status_field = variable_get('zoo_iucn_settings_iucn_status', '');
   $status_field = field_info_field($status_field);
   $status_field = list_allowed_values($status_field);
 
@@ -302,17 +300,17 @@ function get_iucn_status_map() {
   );
 
   //get a lower-cased version for searching
-  $status_field_keys_lower = array_map("strtolower",$status_field_keys);
+  $status_field_keys_lower = array_map("strtolower", $status_field_keys);
 
   //Figure out how the website stores its status data
   foreach ($iucn_status_map as $k => $v) {
     //first search for the abbreviated version
-    if ($status_key = array_search( strtolower($k), array_map("strtolower",$status_field_keys_lower) )) {
+    if ($status_key = array_search( strtolower($k), array_map("strtolower", $status_field_keys_lower) )) {
       $iucn_status_map[$k] = $status_field_keys[$status_key];
     }
 
     //then search for the spelled-out version
-    else if ($status_key = array_search( strtolower($v), array_map("strtolower",$status_field_keys_lower) )) {
+    elseif ($status_key = array_search( strtolower($v), array_map("strtolower", $status_field_keys_lower) )) {
       $iucn_status_map[$k] = $status_field_keys[$status_key];
     }
   }
@@ -334,21 +332,23 @@ function zoo_iucn_data_view() {
 
   // create table
   $rows = array();
-  foreach($animals as $nid => $animal) {
+  foreach ($animals as $nid => $animal) {
     $gs = $animal->field_genus_and_species['und'][0]['value'];
     $status = $animal->field_iucn_designation['und'][0]['value'];
     // if any animal does not exist in cache, don't print any of them, because the user should pull fresh data
     if ( $iucn = cache_get($nid, 'cache_iucn') ) {
       $iucn = $iucn->data;
-    } else {
+    }
+    else {
       return '';
     }
 
     //prepare the genus/species operation
     if ($iucn['status'] === NULL) {
-      $operation_gs = l('Google', 'https://www.google.com/search?q=iucn+' . $gs, array('attributes' => array('target'=>'_blank')));
-    } else {
-      $operation_gs = l('update', 'iucn-update/gs/' . $animal -> nid);
+      $operation_gs = l(t('Google'), 'https://www.google.com/search?q=iucn+' . $gs, array('attributes' => array('target' => '_blank')));
+    }
+    else {
+      $operation_gs = l(t('update'), 'iucn-update/gs/' . $animal -> nid);
     }
 
 
@@ -357,24 +357,24 @@ function zoo_iucn_data_view() {
       $iucn['status'] = $iucn_status_map[$iucn['status']];
 
       //we now know that the IUCN status value corresponds with an option value in the website's status field, so we prepare the status operation
-      $operation_status = l('update', 'iucn-update/status/' . $animal -> nid);
+      $operation_status = l(t('update'), 'iucn-update/status/' . $animal -> nid);
 
       // //and we change the status value to the website's version so that it's ready to be written to the node
       // cache_set($nid, $iucn, 'cache_iucn');
     }
 
-    //if IUCN genus species matches Your genus species, remove it because there isn't a problem with it, else make bold and add operation
-    $iucn['genus_species'] = ($iucn['genus_species'] == $gs) ? NULL : '<strong>'. $iucn['genus_species'] . '</strong> ' . $operation_gs;
+    //if IUCN genus species matches NZP genus species, remove it because there isn't a problem with it, else make bold and add operation
+    $iucn['genus_species'] = ($iucn['genus_species'] == $gs) ? NULL : '<strong>' . $iucn['genus_species'] . '</strong> ' . $operation_gs;
 
 
-    //if IUCN status matches Your status, remove it because there isn't a problem with it.
+    //if IUCN status matches NZP status, remove it because there isn't a problem with it.
     if (strtolower($iucn['status']) == strtolower($status)) {
       $iucn['status'] = NULL;
     }
 
     //if the IUCN status is still there, bold it and add the operation
     if (!is_null($iucn['status'])) {
-      $iucn['status'] = '<strong>'. $iucn['status'] . '</strong> ' . $operation_status;
+      $iucn['status'] = '<strong>' . $iucn['status'] . '</strong> ' . $operation_status;
     }
 
     //clear the operations for the next animal
@@ -385,7 +385,7 @@ function zoo_iucn_data_view() {
     // kpr($animal);
       $rows[] =
         array(
-          l($animal->title, $animal->path['alias'], array('attributes' => array('target'=>'_blank'))),
+          l($animal->title, $animal->path['alias'], array('attributes' => array('target' => '_blank'))),
           t($gs),
           t($iucn['genus_species']),
           t($status),
@@ -399,9 +399,9 @@ function zoo_iucn_data_view() {
   $table = array(
   'header' => array(
     t('Common Name'),
-    t('Your Genus/Species'),
+    t('NZP Genus/Species'),
     t('IUCN Genus/Species'),
-    t('Your Conservation Status'),
+    t('NZP Conservation Status'),
     t('IUCN Conservation Status')
     ),
   'rows' => $rows
@@ -420,7 +420,8 @@ function zoo_iucn_data_page_view() {
   $test_call = iucn_call('Ailuropoda melanoleuca');
   if (isset($test_call['message']) || isset($test_call['error'])) {
     drupal_set_message(t('There is something wrong with your IUCN API Settings. You cannot import until you correct them.'), 'warning', FALSE);
-  } else {
+  }
+  else {
     $form = drupal_get_form('zoo_iucn_update_form');
     $page = drupal_render($form);
   }
