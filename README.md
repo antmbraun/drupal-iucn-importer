@@ -19,4 +19,6 @@ be in sync with IUCN.
   1. Click the "Check IUCN Data" tab.
   2. Click the "Pull new data from IUCN" button.
   3. A table should be generated listing inconsistencies between your animal data and IUCN's data.
+  4. This table will be kept up-to-date with any changes that occur to your animal nodes, e.g. if someone changes the value of the IUCN conservation field on a particular node, this module will check to see whether the value conforms with IUCN and if not, will add a row to this table.
+  5. The links to update your data to match IUCN data are self-explanatory.
 
