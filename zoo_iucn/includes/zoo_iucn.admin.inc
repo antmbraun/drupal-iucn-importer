@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Provides the form for the Zoo IUCN module settings
+ * Defines the settings form for the Zoo IUCN module
  */
 
  /**

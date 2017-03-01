@@ -21,19 +21,20 @@ function zoo_iucn_permission() {
  */
 function zoo_iucn_help($path, $arg) {
   switch ($path) {
-    case 'admin/animals/data_update' :
-      $h =  t("This table shows how your animal species' data compares with the most recently pulled data from IUCN. If you do not see a table below, then you must pull new data");
+    case 'admin/animals/data_update':
+      $h = t("This table shows how your animal species' data compares with the most recently pulled data from IUCN. If you do not see a table below, then you must pull new data");
       return $h;
       break;
   }
 }
 
-/**
-* Implements hook_flush_caches().
-*/
-function zoo_iucn_flush_caches() {
-  return array('cache_iucn');
-}
+//
+// /**
+// * Implements hook_flush_caches().
+// */
+// function zoo_iucn_flush_caches() {
+//   return array('cache_iucn');
+// }
 
 /**
  * Implements hook_menu().
@@ -53,7 +54,6 @@ function zoo_iucn_menu() {
   $items['admin/content/iucn/data-view'] = array(
     'title' => 'Check IUCN data',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'access arguments' => array('Administer Animal Data Updates via IUCN'),
   );
 
   $items['admin/content/iucn/settings'] = array(

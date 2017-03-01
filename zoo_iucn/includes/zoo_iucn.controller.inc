@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Provides the functionality for the Zoo IUCN module
- */
 
 /**
  * Implements hook_form()
