@@ -22,7 +22,9 @@ function zoo_iucn_permission() {
 function zoo_iucn_help($path, $arg) {
   switch ($path) {
     case 'admin/content/iucn':
-      $h = t("This table shows how your animal species' data compares with the most recently pulled data from IUCN. If you do not see a table below, then you must pull new data");
+      $h = t("<p>This table shows how your animal species' data compares with the most recently pulled data from IUCN.<br>");
+      $h .= t("If an animal is listed, that means that there is some kind of problem with it. Animals that match IUCN are excluded.<br>");
+      $h .= t("If you do not see a table below, then you must pull new data.</p>");
       return $h;
       break;
   }
