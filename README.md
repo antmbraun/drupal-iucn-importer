@@ -13,7 +13,7 @@ be in sync with IUCN.
     1. Enter your IUCN API token. You can obtain one here: http://apiv3.iucnredlist.org/api/v3/token
     2. Select your "Animal" content type. It must contain a field for scientific name and a field for IUCN conservation status.
     3. Select your scientific name and IUCN conservation status fields.
-    4. Press save.
+    4. Click save.
     
 ### Usage
   1. Click the "Check IUCN Data" tab.
