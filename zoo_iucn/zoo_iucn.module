@@ -21,14 +21,13 @@ function zoo_iucn_permission() {
  */
 function zoo_iucn_help($path, $arg) {
   switch ($path) {
-    case 'admin/animals/data_update':
+    case 'admin/content/iucn':
       $h = t("This table shows how your animal species' data compares with the most recently pulled data from IUCN. If you do not see a table below, then you must pull new data");
       return $h;
       break;
   }
 }
 
-//
 // /**
 // * Implements hook_flush_caches().
 // */

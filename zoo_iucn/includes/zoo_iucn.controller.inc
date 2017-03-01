@@ -17,7 +17,6 @@ function zoo_iucn_update_form($form, &$form_state) {
  */
 function zoo_iucn_update_form_submit($form, &$form_state) {
   $animals = get_animals();
-  // dpm($animals);
   // $animals = array_values($animals);
   $items_per_batch = 10;
   $batch = array(
@@ -38,7 +37,10 @@ function zoo_iucn_update_form_submit($form, &$form_state) {
       $i++;
     }
   }
-    batch_set($batch);
+  //add remaining animals to batch
+  $batch['operations'][] = array('iucn_process', array($gs_array[$i]));
+  
+  batch_set($batch);
 }
 
 
@@ -48,7 +50,6 @@ function zoo_iucn_update_form_submit($form, &$form_state) {
 function iucn_process($gs_array) {
   foreach ($gs_array as $nid => $gs) {
     $result = iucn_call($gs);
-    // dpm($result);
     if (!empty($result['result'])) {
       $final_result = array(
           'status' => $result['result'][0]['category'],
@@ -61,7 +62,6 @@ function iucn_process($gs_array) {
           'genus_species' => 'Unable to find species at IUCN.'
         );
     }
-    // dpm($final_result);
     cache_set($nid, $final_result, 'cache_iucn');
   }
 }
@@ -114,7 +114,6 @@ function zoo_iucn_update_animal($operation = '', $node = '') {
   $value['status'] = $iucn_status_map[$value['status']];
   switch ($operation) {
     case 'gs':
-      // dpm($animal->field_genus_and_species[0]->value());
       $node->field_genus_and_species['und'][0]['value'] = $value['genus_species'];
       node_save($node);
       break;
@@ -154,7 +153,6 @@ function get_iucn_status_map() {
     //get array of status field keys, since this is what we want to map to
     $status_field_keys = array_keys($status_field);
 
-    // dpm($status_field);
 
     // Set up array of IUCN status value => spelled out version, then modify so that the end result is: [iucn value] => [website list field key].
     // This will be used to map values to how the website does IUCN statuses
@@ -204,12 +202,12 @@ function zoo_iucn_data_view() {
   foreach ($animals as $nid => $animal) {
     $gs = $animal->field_genus_and_species['und'][0]['value'];
     $status = $animal->field_iucn_designation['und'][0]['value'];
-    // if any animal does not exist in cache, don't print any of them, because the user should pull fresh data
     if ( $iucn = cache_get($nid, 'cache_iucn') ) {
       $iucn = $iucn->data;
     }
+    // if any animal does not exist in cache, don't print any of them, because the user should pull fresh data
     else {
-      return '';
+      return t('Please pull new data');
     }
 
     //prepare the genus/species operation
@@ -227,9 +225,6 @@ function zoo_iucn_data_view() {
 
       //we now know that the IUCN status value corresponds with an option value in the website's status field, so we prepare the status operation
       $operation_status = l(t('update'), 'iucn-update/status/' . $animal -> nid);
-
-      // //and we change the status value to the website's version so that it's ready to be written to the node
-      // cache_set($nid, $iucn, 'cache_iucn');
     }
 
     //if IUCN genus species matches NZP genus species, remove it because there isn't a problem with it, else make bold and add operation
@@ -251,7 +246,6 @@ function zoo_iucn_data_view() {
 
     //only add an animal to the table if an issue has been found with either its status or gs
     if ($iucn['status'] || $iucn['genus_species']) {
-    // kpr($animal);
       $rows[] =
         array(
           l($animal->title, $animal->path['alias'], array('attributes' => array('target' => '_blank'))),
