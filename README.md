@@ -17,5 +17,6 @@ be in sync with IUCN.
     
 ### Usage
   1. Click the "Check IUCN Data" tab.
-  2. Click the "P
+  2. Click the "Pull new data from IUCN" button.
+  3. A table should be generated listing inconsistencies between your animal data and IUCN's data.
 
