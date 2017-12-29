@@ -1,3 +1,3 @@
 name = Zoo IUCN
-description = Consumes the IUCN API in order to keep animal conservation statuses up-to-date.
+description = Uses the IUCN API to keep animal conservation statuses and scientific names up-to-date.
 core = 7.x
