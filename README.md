@@ -2,10 +2,7 @@ Drupal IUCN importer
 ====================================
 
 This module allows Drupal users to check animal scientific names and conservation statuses 
-against the IUCN API and provides a seamless way to update their data to 
-be in sync with IUCN.
-
-
+against IUCN data using their API. It also provides a seamless way to update their site's data.
 
 ### Installation
   1. Install like any other drupal module
